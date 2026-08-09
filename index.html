@@ -29,6 +29,18 @@
 
 <div id="player"></div>
 
+<button onclick="recordSpine()"
+style="
+position:absolute;
+top:20px;
+left:20px;
+z-index:10;
+padding:10px;
+font-size:18px;
+">
+Record 10s
+</button>
+
 <script>
 const player = new spine.SpinePlayer("player", {
 
@@ -60,6 +72,47 @@ const player = new spine.SpinePlayer("player", {
             "Skins:",
             player.skeleton.data.skins.map(s => s.name)
         );
+
+        const canvas = document.querySelector("canvas");
+
+        window.recordSpine = function(){
+
+            let stream = canvas.captureStream(60);
+
+            let recorder = new MediaRecorder(stream,{
+                mimeType:"video/webm;codecs=vp9",
+                videoBitsPerSecond:50000000
+            });
+
+            let chunks = [];
+
+            recorder.ondataavailable = e => {
+                if(e.data.size > 0){
+                    chunks.push(e.data);
+                }
+            };
+
+            recorder.onstop = () => {
+
+                let blob = new Blob(chunks,{
+                    type:"video/webm"
+                });
+
+                let url = URL.createObjectURL(blob);
+
+                let a = document.createElement("a");
+                a.href = url;
+                a.download = "1505-animation.webm";
+                a.click();
+            };
+
+            recorder.start();
+
+            setTimeout(()=>{
+                recorder.stop();
+            },10000);
+        };
+
     },
 
     error: function(player, error) {

@@ -99,10 +99,12 @@ const player = new spine.SpinePlayer("player", {
         window.recordSpine = function(){
             statusEl.textContent = "";
             log("Merekam...");
-            // rekam di resolusi rendah dulu untuk tes beban
+            // rekam dengan rasio aspek yang sama seperti kanvas asli
             let recordCanvas = document.createElement("canvas");
-            recordCanvas.width = 480;
-            recordCanvas.height = 480;
+            let maxSide = 540;
+            let scale = maxSide / Math.max(canvas.width, canvas.height);
+            recordCanvas.width = Math.round(canvas.width * scale);
+            recordCanvas.height = Math.round(canvas.height * scale);
             let rctx = recordCanvas.getContext("2d");
             let drawInterval = setInterval(() => {
                 rctx.drawImage(canvas, 0, 0, recordCanvas.width, recordCanvas.height);

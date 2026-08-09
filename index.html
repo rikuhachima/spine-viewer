@@ -110,6 +110,9 @@ const player = new spine.SpinePlayer("player", {
             recorder.ondataavailable = e => {
                 if(e.data.size > 0){
                     chunks.push(e.data);
+                    log("detik " + chunks.length + ": +" + (e.data.size/1024).toFixed(1) + " KB");
+                } else {
+                    log("detik " + (chunks.length+1) + ": 0 KB (tidak ada data baru!)");
                 }
             };
 
@@ -130,7 +133,7 @@ const player = new spine.SpinePlayer("player", {
                 });
             };
 
-            recorder.start();
+            recorder.start(1000);
             setTimeout(()=>{
                 recorder.stop();
             },10000);

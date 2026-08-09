@@ -105,7 +105,7 @@ const player = new spine.SpinePlayer("player", {
             // rekam dengan rasio aspek sesuai TAMPILAN kanvas di layar (bukan buffer internal)
             let rect = canvas.getBoundingClientRect();
             let recordCanvas = document.createElement("canvas");
-            let maxSide = 1600;
+            let maxSide = 2000;
             let scale = maxSide / Math.max(rect.width, rect.height);
             recordCanvas.width = Math.round(rect.width * scale);
             recordCanvas.height = Math.round(rect.height * scale);
@@ -119,7 +119,7 @@ const player = new spine.SpinePlayer("player", {
             let stream = recordCanvas.captureStream(24);
             let recorder = new MediaRecorder(stream,{
                 mimeType:"video/webm;codecs=vp8",
-                videoBitsPerSecond:16000000
+                videoBitsPerSecond:20000000
             });
             let chunks = [];
             let startTime = Date.now();

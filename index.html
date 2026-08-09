@@ -99,12 +99,13 @@ const player = new spine.SpinePlayer("player", {
         window.recordSpine = function(){
             statusEl.textContent = "";
             log("Merekam...");
-            // rekam dengan rasio aspek yang sama seperti kanvas asli
+            // rekam dengan rasio aspek sesuai TAMPILAN kanvas di layar (bukan buffer internal)
+            let rect = canvas.getBoundingClientRect();
             let recordCanvas = document.createElement("canvas");
             let maxSide = 540;
-            let scale = maxSide / Math.max(canvas.width, canvas.height);
-            recordCanvas.width = Math.round(canvas.width * scale);
-            recordCanvas.height = Math.round(canvas.height * scale);
+            let scale = maxSide / Math.max(rect.width, rect.height);
+            recordCanvas.width = Math.round(rect.width * scale);
+            recordCanvas.height = Math.round(rect.height * scale);
             let rctx = recordCanvas.getContext("2d");
             let drawInterval = setInterval(() => {
                 rctx.drawImage(canvas, 0, 0, recordCanvas.width, recordCanvas.height);

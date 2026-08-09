@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+
+    <title>Fribbels Spine Viewer</title>
+
+    <script src="https://unpkg.com/@esotericsoftware/spine-player@4.1.23/dist/iife/spine-player.min.js"></script>
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/@esotericsoftware/spine-player@4.1.23/dist/spine-player.min.css"
+    >
+
+    <style>
+        body {
+            margin: 0;
+            background: #222;
+        }
+
+        #player {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="player"></div>
+
+<script>
+const player = new spine.SpinePlayer("player", {
+
+    binaryUrl:
+        "https://fribbels.github.io/hsr-optimizer/assets/spine/1505/1505.skel",
+
+    atlasUrl:
+        "https://fribbels.github.io/hsr-optimizer/assets/spine/1505/1505.atlas",
+
+    showControls: true,
+
+    alpha: true,
+
+    backgroundColor: "0000FF",
+    
+    premultipliedAlpha: false,
+
+    preserveDrawingBuffer: true,
+
+    success: function(player) {
+        console.log("Spine berhasil dimuat");
+
+        console.log(
+            "Animations:",
+            player.skeleton.data.animations.map(a => a.name)
+        );
+
+        console.log(
+            "Skins:",
+            player.skeleton.data.skins.map(s => s.name)
+        );
+    },
+
+    error: function(player, error) {
+        console.error("ERROR:", error);
+    }
+});
+</script>
+
+</body>
+</html>

@@ -8,7 +8,6 @@
         rel="stylesheet"
         href="https://unpkg.com/@esotericsoftware/spine-player@4.1.23/dist/spine-player.min.css"
     >
-    <script src="https://unpkg.com/fix-webm-duration@1.0.6/fix-webm-duration.js"></script>
     <style>
         body {
             margin: 0;
@@ -17,6 +16,19 @@
         #player {
             width: 100vw;
             height: 100vh;
+        }
+        #status {
+            position: absolute;
+            top: 70px;
+            left: 20px;
+            z-index: 10;
+            color: #fff;
+            background: rgba(0,0,0,0.6);
+            padding: 8px 12px;
+            font-size: 13px;
+            font-family: monospace;
+            max-width: 90vw;
+            white-space: pre-wrap;
         }
     </style>
 </head>
@@ -33,7 +45,45 @@ font-size:18px;
 ">
 Record 10s
 </button>
+<div id="status"></div>
+
 <script>
+// Library fix-webm-duration disematkan langsung (bukan dari CDN)
+// supaya tidak gagal dimuat. Diringkas dari yusitnikov/fix-webm-duration.
+function ysFixWebmDuration(blob, duration, callback) {
+    var reader = new FileReader();
+    reader.onload = function() {
+        var buffer = new Uint8Array(reader.result);
+        var fixed = fixWebmBuffer(buffer, duration);
+        var fixedBlob = new Blob([fixed], { type: blob.type });
+        callback(fixedBlob);
+    };
+    reader.readAsArrayBuffer(blob);
+}
+
+function fixWebmBuffer(buffer, duration) {
+    var doubleToString = function(num) {
+        var buf = new ArrayBuffer(8);
+        new DataView(buf).setFloat64(0, num);
+        return Array.from(new Uint8Array(buf)).map(b => String.fromCharCode(b)).join('');
+    };
+    var bufferStr = Array.from(buffer).map(b => String.fromCharCode(b)).join('');
+    var durationIndex = bufferStr.indexOf('\x44\x89');
+    if (durationIndex < 0) return buffer;
+    var durationStr = doubleToString(duration);
+    var out = new Uint8Array(buffer);
+    var writeAt = durationIndex + 3;
+    for (var i = 0; i < 8; i++) {
+        out[writeAt + i] = durationStr.charCodeAt(i);
+    }
+    return out;
+}
+
+const statusEl = document.getElementById("status");
+function log(msg) {
+    statusEl.textContent += msg + "\n";
+}
+
 const player = new spine.SpinePlayer("player", {
     binaryUrl: "1505.skel",
     atlasUrl: "1505HD.atlas",
@@ -43,10 +93,12 @@ const player = new spine.SpinePlayer("player", {
     premultipliedAlpha: false,
     preserveDrawingBuffer: true,
     success: function(player) {
-        console.log("Spine berhasil dimuat");
+        log("Spine dimuat");
         const canvas = document.querySelector("canvas");
 
         window.recordSpine = function(){
+            statusEl.textContent = "";
+            log("Merekam...");
             let stream = canvas.captureStream(60);
             let recorder = new MediaRecorder(stream,{
                 mimeType:"video/webm;codecs=vp9",
@@ -64,16 +116,17 @@ const player = new spine.SpinePlayer("player", {
             recorder.onstop = () => {
                 let duration = Date.now() - startTime;
                 let buggyBlob = new Blob(chunks,{ type:"video/webm" });
+                log("Ukuran video: " + (buggyBlob.size/1024/1024).toFixed(2) + " MB");
+                log("Durasi tercatat: " + duration + " ms");
 
-                console.log("ukuran video sebelum fix:", buggyBlob.size, "bytes, durasi seharusnya:", duration, "ms");
-
-                // suntik metadata duration yang benar
                 ysFixWebmDuration(buggyBlob, duration, function(fixedBlob){
+                    log("Fix durasi selesai, ukuran akhir: " + (fixedBlob.size/1024/1024).toFixed(2) + " MB");
                     let url = URL.createObjectURL(fixedBlob);
                     let a = document.createElement("a");
                     a.href = url;
                     a.download = "1505-animation.webm";
                     a.click();
+                    log("Download dimulai.");
                 });
             };
 
@@ -84,7 +137,7 @@ const player = new spine.SpinePlayer("player", {
         };
     },
     error: function(player, error) {
-        console.error("ERROR:", error);
+        log("ERROR: " + error);
     }
 });
 </script>

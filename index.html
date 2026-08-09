@@ -99,10 +99,19 @@ const player = new spine.SpinePlayer("player", {
         window.recordSpine = function(){
             statusEl.textContent = "";
             log("Merekam...");
-            let stream = canvas.captureStream(30);
+            // rekam di resolusi rendah dulu untuk tes beban
+            let recordCanvas = document.createElement("canvas");
+            recordCanvas.width = 480;
+            recordCanvas.height = 480;
+            let rctx = recordCanvas.getContext("2d");
+            let drawInterval = setInterval(() => {
+                rctx.drawImage(canvas, 0, 0, recordCanvas.width, recordCanvas.height);
+            }, 1000/24);
+
+            let stream = recordCanvas.captureStream(24);
             let recorder = new MediaRecorder(stream,{
                 mimeType:"video/webm;codecs=vp8",
-                videoBitsPerSecond:4000000
+                videoBitsPerSecond:2500000
             });
             let chunks = [];
             let startTime = Date.now();
@@ -117,6 +126,7 @@ const player = new spine.SpinePlayer("player", {
             };
 
             recorder.onstop = () => {
+                clearInterval(drawInterval);
                 let duration = Date.now() - startTime;
                 let buggyBlob = new Blob(chunks,{ type:"video/webm" });
                 log("Ukuran video: " + (buggyBlob.size/1024/1024).toFixed(2) + " MB");

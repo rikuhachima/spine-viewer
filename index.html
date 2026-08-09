@@ -2,33 +2,26 @@
 <html>
 <head>
     <meta charset="UTF-8">
-
     <title>Fribbels Spine Viewer</title>
-
     <script src="https://unpkg.com/@esotericsoftware/spine-player@4.1.23/dist/iife/spine-player.min.js"></script>
-
     <link
         rel="stylesheet"
         href="https://unpkg.com/@esotericsoftware/spine-player@4.1.23/dist/spine-player.min.css"
     >
-
+    <script src="https://unpkg.com/fix-webm-duration@1.0.6/fix-webm-duration.js"></script>
     <style>
         body {
             margin: 0;
             background: #222;
         }
-
         #player {
             width: 100vw;
             height: 100vh;
         }
     </style>
 </head>
-
 <body>
-
 <div id="player"></div>
-
 <button onclick="recordSpine()"
 style="
 position:absolute;
@@ -40,51 +33,27 @@ font-size:18px;
 ">
 Record 10s
 </button>
-
 <script>
 const player = new spine.SpinePlayer("player", {
-
-    binaryUrl:
-        "1505.skel",
-
-    atlasUrl:
-        "1505HD.atlas",
-
+    binaryUrl: "1505.skel",
+    atlasUrl: "1505HD.atlas",
     showControls: true,
-
     alpha: true,
-
     backgroundColor: "0000FF",
-    
     premultipliedAlpha: false,
-
     preserveDrawingBuffer: true,
-
     success: function(player) {
         console.log("Spine berhasil dimuat");
-
-        console.log(
-            "Animations:",
-            player.skeleton.data.animations.map(a => a.name)
-        );
-
-        console.log(
-            "Skins:",
-            player.skeleton.data.skins.map(s => s.name)
-        );
-
         const canvas = document.querySelector("canvas");
 
         window.recordSpine = function(){
-
             let stream = canvas.captureStream(60);
-
             let recorder = new MediaRecorder(stream,{
                 mimeType:"video/webm;codecs=vp9",
                 videoBitsPerSecond:50000000
             });
-
             let chunks = [];
+            let startTime = Date.now();
 
             recorder.ondataavailable = e => {
                 if(e.data.size > 0){
@@ -93,33 +62,31 @@ const player = new spine.SpinePlayer("player", {
             };
 
             recorder.onstop = () => {
+                let duration = Date.now() - startTime;
+                let buggyBlob = new Blob(chunks,{ type:"video/webm" });
 
-                let blob = new Blob(chunks,{
-                    type:"video/webm"
+                console.log("ukuran video sebelum fix:", buggyBlob.size, "bytes, durasi seharusnya:", duration, "ms");
+
+                // suntik metadata duration yang benar
+                ysFixWebmDuration(buggyBlob, duration, function(fixedBlob){
+                    let url = URL.createObjectURL(fixedBlob);
+                    let a = document.createElement("a");
+                    a.href = url;
+                    a.download = "1505-animation.webm";
+                    a.click();
                 });
-
-                let url = URL.createObjectURL(blob);
-
-                let a = document.createElement("a");
-                a.href = url;
-                a.download = "1505-animation.webm";
-                a.click();
             };
 
             recorder.start();
-
             setTimeout(()=>{
                 recorder.stop();
             },10000);
         };
-
     },
-
     error: function(player, error) {
         console.error("ERROR:", error);
     }
 });
 </script>
-
 </body>
 </html>

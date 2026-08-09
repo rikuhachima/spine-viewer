@@ -110,6 +110,8 @@ const player = new spine.SpinePlayer("player", {
             recordCanvas.width = Math.round(rect.width * scale);
             recordCanvas.height = Math.round(rect.height * scale);
             let rctx = recordCanvas.getContext("2d");
+            rctx.imageSmoothingEnabled = true;
+            rctx.imageSmoothingQuality = "high";
             let drawInterval = setInterval(() => {
                 rctx.drawImage(canvas, 0, 0, recordCanvas.width, recordCanvas.height);
             }, 1000/24);
@@ -117,7 +119,7 @@ const player = new spine.SpinePlayer("player", {
             let stream = recordCanvas.captureStream(24);
             let recorder = new MediaRecorder(stream,{
                 mimeType:"video/webm;codecs=vp8",
-                videoBitsPerSecond:8000000
+                videoBitsPerSecond:12000000
             });
             let chunks = [];
             let startTime = Date.now();

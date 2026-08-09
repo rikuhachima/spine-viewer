@@ -99,10 +99,10 @@ const player = new spine.SpinePlayer("player", {
         window.recordSpine = function(){
             statusEl.textContent = "";
             log("Merekam...");
-            let stream = canvas.captureStream(60);
+            let stream = canvas.captureStream(30);
             let recorder = new MediaRecorder(stream,{
-                mimeType:"video/webm;codecs=vp9",
-                videoBitsPerSecond:50000000
+                mimeType:"video/webm;codecs=vp8",
+                videoBitsPerSecond:4000000
             });
             let chunks = [];
             let startTime = Date.now();
